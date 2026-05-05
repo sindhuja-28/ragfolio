@@ -8,7 +8,7 @@ export function BackendStatus() {
   useEffect(() => {
     const check = async () => {
       try {
-        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || (import.meta.env.PROD ? '/api' : '')
+        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || '/api'
         const res = await fetch(`${apiBaseUrl}/health`)
         setAlive(res.ok)
       } catch {

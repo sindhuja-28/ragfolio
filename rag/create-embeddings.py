@@ -143,7 +143,7 @@ def save_to_vector_store(
     from chromadb.config import Settings
     client = chromadb.PersistentClient(
         path=CHROMA_DB_DIR, 
-        settings=Settings(anonymized_telemetry=False)
+        settings=Settings(anonymized_telemetry=False, is_persistent=True)
     )
 
     # Safely clear the collection by deleting and recreating it
@@ -152,7 +152,10 @@ def save_to_vector_store(
     except Exception:
         pass  # Collection likely doesn't exist yet
 
-    collection = client.get_or_create_collection(name=COLLECTION_NAME)
+    collection = client.get_or_create_collection(
+        name=COLLECTION_NAME,
+        metadata={"hnsw:space": "cosine"}
+    )
 
     print("Storing embeddings in ChromaDB...")
     for start in range(0, len(chunks), DB_ADD_BATCH_SIZE):

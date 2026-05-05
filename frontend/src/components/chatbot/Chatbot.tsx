@@ -32,7 +32,7 @@ export function Chatbot() {
 
     try {
       // In production, the backend serves the frontend from the same origin, so we use a relative path
-      // In development, you would set VITE_API_BASE_URL=http://localhost:8000 in your .env
+      // If you deploy the frontend separately (Netlify), set VITE_API_BASE_URL to your backend URL.
       const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || '/api'
       const response = await fetch(`${apiBaseUrl}/ask`, {
         method: 'POST',
@@ -42,10 +42,16 @@ export function Chatbot() {
         body: JSON.stringify({ question: content }),
       })
 
-      const data = await response.json()
+      const rawText = await response.text()
+      const data = rawText ? JSON.parse(rawText) : null
 
       if (!response.ok) {
-        throw new Error(data.detail || 'Failed to get an answer from the AI.')
+        const errorDetail = data?.detail || rawText || `${response.status} ${response.statusText}`
+        throw new Error(errorDetail || 'Failed to get an answer from the AI.')
+      }
+
+      if (!data || typeof data.answer !== 'string') {
+        throw new Error('Backend returned invalid response. Check the backend URL and API status.')
       }
 
       setMessages((prev) => [...prev, { role: 'assistant', content: data.answer }])

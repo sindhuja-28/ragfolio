@@ -44,11 +44,16 @@ def _get_chroma_collection():
     global _chroma_collection
     if _chroma_collection is None:
         from chromadb.config import Settings
+        # Always recreate client to avoid stale connections
         client = chromadb.PersistentClient(
             path=CHROMA_DB_DIR, 
-            settings=Settings(anonymized_telemetry=False)
+            settings=Settings(anonymized_telemetry=False, is_persistent=True)
         )
-        _chroma_collection = client.get_or_create_collection(name=COLLECTION_NAME)
+        # Simply get_or_create, don't try to distinguish
+        _chroma_collection = client.get_or_create_collection(
+            name=COLLECTION_NAME,
+            metadata={"hnsw:space": "cosine"}
+        )
     return _chroma_collection
 
 
